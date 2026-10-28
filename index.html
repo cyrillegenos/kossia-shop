@@ -384,216 +384,120 @@ function ouvrirAide() {
 }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <script>
-const produits = [
-    {
-        id: 1,
-        nom: "Sweat Brooklyn",
-        prix: 8500,
-        categorie: "Vêtements",
-        emoji: "👕"
-    },
-    {
-        id: 2,
-        nom: "Robe cerises",
-        prix: 7500,
-        categorie: "Vêtements",
-        emoji: "👗"
-    },
-    {
-        id: 3,
-        nom: "Bracelets papillon",
-        prix: 2500,
-        categorie: "Bijoux",
-        emoji: "📿"
-    },
-    {
-        id: 4,
-        nom: "Bracelets bleus",
-        prix: 2000,
-        categorie: "Bijoux",
-        emoji: "💎"
-    },
-    {
-        id: 5,
-        nom: "Gourde tendance",
-        prix: 3000,
-        categorie: "Accessoires",
-        emoji: "🥤"
-    },
-    {
-        id: 6,
-        nom: "Lunettes solaires",
-        prix: 4500,
-        categorie: "Accessoires",
-        emoji: "🕶️"
-    },
-    {
-        id: 7,
-        nom: "Parfum signature",
-        prix: 10000,
-        categorie: "Beauté",
-        emoji: "🌸"
-    },
-    {
-        id: 8,
-        nom: "Sac élégant",
-        prix: 9000,
-        categorie: "Accessoires",
-        emoji: "👜"
-    }
+const produitsInitiaux = [
+  {id:"legacy-1",nom:"Sweat Brooklyn",prix:8500,categorie:"Vêtements",emoji:"👕"},
+  {id:"legacy-2",nom:"Robe cerises",prix:7500,categorie:"Vêtements",emoji:"👗"},
+  {id:"legacy-3",nom:"Bracelets papillon",prix:2500,categorie:"Bijoux",emoji:"📿"},
+  {id:"legacy-4",nom:"Bracelets bleus",prix:2000,categorie:"Bijoux",emoji:"💎"},
+  {id:"legacy-5",nom:"Gourde tendance",prix:3000,categorie:"Accessoires",emoji:"🥤"},
+  {id:"legacy-6",nom:"Lunettes solaires",prix:4500,categorie:"Accessoires",emoji:"🕶️"},
+  {id:"legacy-7",nom:"Parfum signature",prix:10000,categorie:"Beauté",emoji:"🌸"},
+  {id:"legacy-8",nom:"Sac élégant",prix:9000,categorie:"Accessoires",emoji:"👜"}
 ];
-
+let produits = produitsInitiaux.slice();
 let panier = {};
+let categorieActuelle = "Tous";
+let chargementSupabase = false;
 
-function monnaie(nombre) {
-    return nombre.toLocaleString("fr-FR") + " FCFA";
+function monnaie(nombre) { return Number(nombre || 0).toLocaleString("fr-FR") + " FCFA"; }
+function echapperTexte(valeur) {
+  return String(valeur ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-
-function afficherProduits(categorie = "Tous") {
-    const conteneur = document.getElementById("products");
-
-    conteneur.innerHTML = "";
-
-    produits
-        .filter(p => categorie === "Tous" ||
-                     p.categorie === categorie)
-        .forEach(p => {
-            const article = document.createElement("div");
-
-            article.className = "product";
-
-            article.innerHTML = `
-                <div class="emoji">${p.emoji}</div>
-                <h3>${p.nom}</h3>
-                <p class="price">${monnaie(p.prix)}</p>
-                <button class="btn"
-                        onclick="ajouter(${p.id})">
-                    Ajouter au panier +
-                </button>
-            `;
-
-            conteneur.appendChild(article);
-        });
+function afficherProduits(categorie = categorieActuelle) {
+  categorieActuelle = categorie;
+  const conteneur = document.getElementById("products");
+  conteneur.innerHTML = "";
+  const liste = produits.filter(p => categorie === "Tous" || p.categorie === categorie);
+  if (!liste.length) {
+    conteneur.innerHTML = '<p class="empty">Aucun produit dans cette catégorie pour le moment.</p>';
+    return;
+  }
+  liste.forEach(p => {
+    const article = document.createElement("div");
+    article.className = "product";
+    const visuel = p.image_url
+      ? '<img src="' + echapperTexte(p.image_url) + '" alt="' + echapperTexte(p.nom) + '" loading="lazy" style="width:100%;height:110px;object-fit:contain;background:#f6e4e8;border-radius:10px;margin-bottom:12px" onerror="this.outerHTML=\'<div class=&quot;emoji&quot;>\'+' + JSON.stringify(echapperTexte(p.emoji || "🛍️")) + '+\'</div>\'">'
+      : '<div class="emoji">' + echapperTexte(p.emoji || "🛍️") + '</div>';
+    article.innerHTML = visuel + '<h3>' + echapperTexte(p.nom) + '</h3>' +
+      '<p class="price">' + monnaie(p.prix) + '</p>' +
+      (Number(p.stock ?? 0) <= 0 && p.stock !== undefined
+        ? '<button class="btn" disabled style="opacity:.55">Rupture de stock</button>'
+        : '<button class="btn" onclick="ajouter(' + JSON.stringify(String(p.id)).replace(/</g,"\\u003c") + ')">Ajouter au panier +</button>');
+    conteneur.appendChild(article);
+  });
 }
-
 function ajouter(id) {
-    panier[id] = (panier[id] || 0) + 1;
-    afficherPanier();
+  const p = produits.find(x => String(x.id) === String(id));
+  if (!p) return;
+  if (p.stock !== undefined && Number(p.stock) <= 0) { alert("Cet article est actuellement indisponible."); return; }
+  panier[id] = (panier[id] || 0) + 1;
+  afficherPanier();
 }
-
 function afficherPanier() {
-    const conteneur = document.getElementById("cartItems");
-
-    conteneur.innerHTML = "";
-
-    let total = 0;
-    let quantite = 0;
-
-    produits.forEach(p => {
-        const q = panier[p.id] || 0;
-
-        if (q > 0) {
-            total += p.prix * q;
-            quantite += q;
-
-            const ligne = document.createElement("div");
-
-            ligne.className = "cart-item";
-
-            ligne.innerHTML = `
-                <div>
-                    <strong>${p.nom}</strong><br>
-                    ${monnaie(p.prix)} × ${q}
-                </div>
-
-                <div>
-                    <button onclick="modifier(${p.id}, -1)">−</button>
-                    <button onclick="modifier(${p.id}, 1)">+</button>
-                </div>
-            `;
-
-            conteneur.appendChild(ligne);
-        }
-    });
-
-    if (quantite === 0) {
-        conteneur.innerHTML =
-            '<p class="empty">Ton panier est vide pour le moment.</p>';
+  const conteneur = document.getElementById("cartItems");
+  conteneur.innerHTML = "";
+  let total = 0, quantite = 0;
+  produits.forEach(p => {
+    const q = panier[p.id] || 0;
+    if (q > 0) {
+      total += Number(p.prix) * q; quantite += q;
+      const ligne = document.createElement("div");
+      ligne.className = "cart-item";
+      ligne.innerHTML = '<div><strong>' + echapperTexte(p.nom) + '</strong><br>' + monnaie(p.prix) + ' × ' + q + '</div>' +
+        '<div><button type="button" onclick="modifier(' + JSON.stringify(String(p.id)) + ',-1)">−</button> ' +
+        '<button type="button" onclick="modifier(' + JSON.stringify(String(p.id)) + ',1)">+</button></div>';
+      conteneur.appendChild(ligne);
     }
-
-    document.getElementById("total").textContent = monnaie(total);
+  });
+  if (!quantite) conteneur.innerHTML = '<p class="empty">Ton panier est vide pour le moment.</p>';
+  document.getElementById("total").textContent = monnaie(total);
 }
-
 function modifier(id, changement) {
-    panier[id] = (panier[id] || 0) + changement;
-
-    if (panier[id] <= 0) {
-        delete panier[id];
-    }
-
-    afficherPanier();
+  panier[id] = (panier[id] || 0) + changement;
+  if (panier[id] <= 0) delete panier[id];
+  afficherPanier();
 }
-
 document.querySelectorAll(".category").forEach(bouton => {
-    bouton.addEventListener("click", () => {
-        document.querySelectorAll(".category").forEach(b => {
-            b.classList.remove("active");
-        });
-
-        bouton.classList.add("active");
-
-        afficherProduits(bouton.dataset.cat);
-    });
+  bouton.addEventListener("click", () => {
+    document.querySelectorAll(".category").forEach(b => b.classList.toggle("active", b === bouton));
+    afficherProduits(bouton.dataset.cat);
+  });
 });
-
 document.getElementById("orderForm").addEventListener("submit", event => {
-    event.preventDefault();
-
-    const articles = produits.filter(p => panier[p.id]);
-
-    if (articles.length === 0) {
-        alert("Ajoute d'abord un article à ton panier !");
-        return;
-    }
-
-    const nom = document.getElementById("name").value;
-    const telephone = document.getElementById("phone").value;
-
-    const details = articles.map(p =>
-        `${p.nom} x${panier[p.id]} : ${monnaie(p.prix * panier[p.id])}`
-    ).join("\n");
-
-    const total = articles.reduce((somme, p) =>
-        somme + p.prix * panier[p.id], 0
-    );
-
-    const message =
-        `Bonjour KOSSIA SHOP !\n\n` +
-        `Je souhaite commander :\n${details}\n\n` +
-        `Total estimé : ${monnaie(total)}\n` +
-        `Nom : ${nom}\nTéléphone : ${telephone}\n\n` +
-        `Merci de confirmer ma commande.`;
-
-    // Remplacer ce numéro par celui de la boutique.
-    const numeroWhatsApp = "2250777079611";
-
-    if (!numeroWhatsApp) {
-        alert(
-            "Le numéro WhatsApp de la boutique n'est pas encore configuré.\n\n" +
-            "Voici le message à envoyer :\n\n" + message
-        );
-        return;
-    }
-
-    const url = "https://wa.me/" + numeroWhatsApp +
-        "?text=" + encodeURIComponent(message);
-
-    window.open(url, "_blank");
+  event.preventDefault();
+  const articles = produits.filter(p => panier[p.id]);
+  if (!articles.length) { alert("Ajoute d'abord un article à ton panier !"); return; }
+  const nom = document.getElementById("name").value.trim();
+  const telephone = document.getElementById("phone").value.trim();
+  const details = articles.map(p => p.nom + " x" + panier[p.id] + " : " + monnaie(p.prix * panier[p.id])).join("\\n");
+  const total = articles.reduce((s,p) => s + Number(p.prix) * panier[p.id],0);
+  const message = "Bonjour KOSSIA SHOP !\\n\\nJe souhaite commander :\\n" + details +
+    "\\n\\nTotal estimé : " + monnaie(total) + "\\nNom : " + nom + "\\nTéléphone : " + telephone +
+    "\\n\\nMerci de confirmer ma commande.";
+  window.open("https://wa.me/2250777079611?text=" + encodeURIComponent(message), "_blank", "noopener");
 });
-
+async function chargerProduitsDepuisSupabase() {
+  if (!window.supabase || !window.KOSSIA_SUPABASE_URL || !window.KOSSIA_SUPABASE_PUBLISHABLE_KEY) return;
+  try {
+    const client = window.supabase.createClient(window.KOSSIA_SUPABASE_URL, window.KOSSIA_SUPABASE_PUBLISHABLE_KEY);
+    const {data,error} = await client.from("products").select("id,name,description,price_xof,category,image_url,stock,active,emoji").eq("active",true).order("created_at",{ascending:false});
+    if (error) throw error;
+    if (Array.isArray(data) && data.length) {
+      produits = data.map(p => ({id:p.id,nom:p.name,prix:Number(p.price_xof),categorie:p.category||"Accessoires",emoji:p.emoji||"🛍️",image_url:p.image_url||"",description:p.description||"",stock:Number(p.stock ?? 0)}));
+      panier = {};
+      afficherProduits(categorieActuelle);
+      afficherPanier();
+    }
+  } catch (error) {
+    console.error("Impossible de charger les produits Supabase :", error);
+  }
+}
 afficherProduits();
 afficherPanier();
+chargerProduitsDepuisSupabase();
 </script>
 
 </body>
