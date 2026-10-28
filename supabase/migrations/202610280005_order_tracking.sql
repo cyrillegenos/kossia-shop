@@ -7,7 +7,7 @@ alter table public.orders
   add column if not exists map_link text not null default '';
 
 update public.orders
-set tracking_code = upper(encode(gen_random_bytes(5), 'hex'))
+set tracking_code = upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))
 where tracking_code is null;
 
 create unique index if not exists orders_tracking_code_uidx
@@ -49,7 +49,7 @@ begin
   if v_area = '' or v_address = '' then
     raise exception 'La commune et l’adresse de livraison sont obligatoires.';
   end if;
-  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 30 then
+  if p_items is null or jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 30 then
     raise exception 'Le panier est vide ou contient trop de lignes.';
   end if;
 
