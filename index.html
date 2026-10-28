@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOSSIA SHOP</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fffaf7;
+    color: #30232a;
+}
+
+header {
+    background: #792642;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-family: Georgia, serif;
+    letter-spacing: 3px;
+}
+
+header p {
+    margin-top: 7px;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px 5px;
+    background: white;
+    border-bottom: 1px solid #eadde0;
+}
+
+nav a {
+    color: #792642;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero {
+    padding: 45px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #f6e4e8, #fff2eb);
+}
+
+.hero h2 {
+    font-family: Georgia, serif;
+    font-size: 32px;
+    color: #51172b;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.btn {
+    display: inline-block;
+    background: #792642;
+    color: white;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 25px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+section {
+    padding: 30px 15px;
+}
+
+section h2 {
+    font-family: Georgia, serif;
+    color: #51172b;
+    margin-bottom: 20px;
+}
+
+.categories {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.category {
+    flex-shrink: 0;
+    padding: 10px 15px;
+    border: 1px solid #eadde0;
+    border-radius: 25px;
+    background: white;
+    color: #792642;
+    cursor: pointer;
+}
+
+.category.active {
+    background: #792642;
+    color: white;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.product {
+    background: white;
+    border: 1px solid #eadde0;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.product .emoji {
+    background: #f6e4e8;
+    border-radius: 10px;
+    height: 110px;
+    display: grid;
+    place-items: center;
+    font-size: 55px;
+    margin-bottom: 12px;
+}
+
+.product h3 {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.product .price {
+    color: #792642;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.product button {
+    width: 100%;
+}
+
+.cart-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #eadde0;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eadde0;
+}
+
+.cart-item button {
+    border: none;
+    background: #f6e4e8;
+    padding: 5px 9px;
+    border-radius: 6px;
+    color: #792642;
+}
+
+.total {
+    font-weight: bold;
+    color: #792642;
+    margin: 20px 0;
+    font-size: 18px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #eadde0;
+    border-radius: 8px;
+    margin: 8px 0 15px;
+}
+
+.empty {
+    color: #766c70;
+    padding: 10px 0;
+}
+
+footer {
+    background: #792642;
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+footer a {
+    color: #ffd9e6;
+}
+
+/* Bouton d'aide WhatsApp */
+#aideWhatsApp {
+    position: fixed;
+    left: 0;
+    top: 45%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+#boutonAide {
+    border: none;
+    padding: 14px 10px;
+    border-radius: 0 10px 10px 0;
+    background: #075e54;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#panneauAide {
+    width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: white;
+    color: #222;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 2px 3px 12px #0003;
+    transition: width 0.3s ease;
+}
+
+#panneauAide.ouvert {
+    width: 250px;
+    padding: 15px;
+}
+
+#panneauAide p {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#panneauAide a {
+    display: block;
+    background: #25D366;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    text-align: center;
+    font-weight: bold;
+}
+
+@media (min-width: 650px) {
+    .products {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .hero h2 {
+        font-size: 42px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>KOSSIA SHOP</h1>
+    <p>MODE • BEAUTÉ • ACCESSOIRES</p>
+</header>
+
+<nav>
+    <a href="#accueil">Accueil</a>
+    <a href="#boutique">Boutique</a>
+    <a href="#panier">Panier 🛍️</a>
+</nav>
+
+<div class="hero" id="accueil">
+    <h2>Affirme ton style.</h2>
+    <p>
+        Découvre notre sélection de vêtements,
+        bijoux, parfums et accessoires.
+    </p>
+    <a href="#boutique" class="btn">Découvrir la boutique</a>
+</div>
+
+<section id="boutique">
+    <h2>Notre boutique ✨</h2>
+
+    <div class="categories">
+        <button class="category active" data-cat="Tous">Tout voir</button>
+        <button class="category" data-cat="Vêtements">Vêtements</button>
+        <button class="category" data-cat="Bijoux">Bijoux</button>
+        <button class="category" data-cat="Accessoires">Accessoires</button>
+        <button class="category" data-cat="Beauté">Beauté</button>
+    </div>
+
+    <br>
+
+    <div class="products" id="products"></div>
+</section>
+
+<section id="panier">
+    <h2>Mon panier 🛒</h2>
+
+    <div class="cart-box">
+        <div id="cartItems"></div>
+
+        <p class="total">
+            Total : <span id="total">0 FCFA</span>
+        </p>
+
+        <h3>Informations de commande</h3>
+
+        <form id="orderForm">
+            <label for="name">Ton nom</label>
+            <input id="name" required placeholder="Nom et prénom">
+
+            <label for="phone">Ton numéro</label>
+            <input id="phone" required type="tel"
+                   placeholder="07 00 00 00 00">
+
+            <button class="btn" type="submit">
+                Commander sur WhatsApp
+            </button>
+        </form>
+    </div>
+</section>
+
+<footer>
+    <strong>KOSSIA SHOP</strong><br>
+    Ton style, ta signature. ♡<br>
+    Côte d'Ivoire 🇨🇮<br><br>
+
+    🛍️ Commandes :
+    <a href="https://wa.me/2250777079611">
+        WhatsApp de Kossia
+    </a>
+
+    <br><br>
+
+    💻 Assistance et création de sites :
+    <a href="https://wa.me/2250141987202">
+        Contacter Genos
+    </a>
+
+    <br><br>
+
+    © 2026 KOSSIA SHOP
+</footer>
+
+<!-- Bouton d'aide WhatsApp -->
+<div id="aideWhatsApp">
+    <button id="boutonAide" onclick="ouvrirAide()">
+        ❔ Aide
+    </button>
+
+    <div id="panneauAide">
+        <strong>Besoin d'aide ?</strong>
+        <p>Une question sur KOSSIA SHOP ? Écris-nous !</p>
+
+        <a href="https://wa.me/2250141987202?text=Bonjour%20Genos%2C%20j%27ai%20une%20question%20concernant%20KOSSIA%20SHOP."
+           target="_blank" rel="noopener noreferrer">
+            💬 Écrire à Genos sur WhatsApp
+        </a>
+    </div>
+</div>
+
+<script>
+function ouvrirAide() {
+    document.getElementById("panneauAide")
+        .classList.toggle("ouvert");
+}
+</script>
+
+<script>
+const produits = [
+    {
+        id: 1,
+        nom: "Sweat Brooklyn",
+        prix: 8500,
+        categorie: "Vêtements",
+        emoji: "👕"
+    },
+    {
+        id: 2,
+        nom: "Robe cerises",
+        prix: 7500,
+        categorie: "Vêtements",
+        emoji: "👗"
+    },
+    {
+        id: 3,
+        nom: "Bracelets papillon",
+        prix: 2500,
+        categorie: "Bijoux",
+        emoji: "📿"
+    },
+    {
+        id: 4,
+        nom: "Bracelets bleus",
+        prix: 2000,
+        categorie: "Bijoux",
+        emoji: "💎"
+    },
+    {
+        id: 5,
+        nom: "Gourde tendance",
+        prix: 3000,
+        categorie: "Accessoires",
+        emoji: "🥤"
+    },
+    {
+        id: 6,
+        nom: "Lunettes solaires",
+        prix: 4500,
+        categorie: "Accessoires",
+        emoji: "🕶️"
+    },
+    {
+        id: 7,
+        nom: "Parfum signature",
+        prix: 10000,
+        categorie: "Beauté",
+        emoji: "🌸"
+    },
+    {
+        id: 8,
+        nom: "Sac élégant",
+        prix: 9000,
+        categorie: "Accessoires",
+        emoji: "👜"
+    }
+];
+
+let panier = {};
+
+function monnaie(nombre) {
+    return nombre.toLocaleString("fr-FR") + " FCFA";
+}
+
+function afficherProduits(categorie = "Tous") {
+    const conteneur = document.getElementById("products");
+
+    conteneur.innerHTML = "";
+
+    produits
+        .filter(p => categorie === "Tous" ||
+                     p.categorie === categorie)
+        .forEach(p => {
+            const article = document.createElement("div");
+
+            article.className = "product";
+
+            article.innerHTML = `
+                <div class="emoji">${p.emoji}</div>
+                <h3>${p.nom}</h3>
+                <p class="price">${monnaie(p.prix)}</p>
+                <button class="btn"
+                        onclick="ajouter(${p.id})">
+                    Ajouter au panier +
+                </button>
+            `;
+
+            conteneur.appendChild(article);
+        });
+}
+
+function ajouter(id) {
+    panier[id] = (panier[id] || 0) + 1;
+    afficherPanier();
+}
+
+function afficherPanier() {
+    const conteneur = document.getElementById("cartItems");
+
+    conteneur.innerHTML = "";
+
+    let total = 0;
+    let quantite = 0;
+
+    produits.forEach(p => {
+        const q = panier[p.id] || 0;
+
+        if (q > 0) {
+            total += p.prix * q;
+            quantite += q;
+
+            const ligne = document.createElement("div");
+
+            ligne.className = "cart-item";
+
+            ligne.innerHTML = `
+                <div>
+                    <strong>${p.nom}</strong><br>
+                    ${monnaie(p.prix)} × ${q}
+                </div>
+
+                <div>
+                    <button onclick="modifier(${p.id}, -1)">−</button>
+                    <button onclick="modifier(${p.id}, 1)">+</button>
+                </div>
+            `;
+
+            conteneur.appendChild(ligne);
+        }
+    });
+
+    if (quantite === 0) {
+        conteneur.innerHTML =
+            '<p class="empty">Ton panier est vide pour le moment.</p>';
+    }
+
+    document.getElementById("total").textContent = monnaie(total);
+}
+
+function modifier(id, changement) {
+    panier[id] = (panier[id] || 0) + changement;
+
+    if (panier[id] <= 0) {
+        delete panier[id];
+    }
+
+    afficherPanier();
+}
+
+document.querySelectorAll(".category").forEach(bouton => {
+    bouton.addEventListener("click", () => {
+        document.querySelectorAll(".category").forEach(b => {
+            b.classList.remove("active");
+        });
+
+        bouton.classList.add("active");
+
+        afficherProduits(bouton.dataset.cat);
+    });
+});
+
+document.getElementById("orderForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const articles = produits.filter(p => panier[p.id]);
+
+    if (articles.length === 0) {
+        alert("Ajoute d'abord un article à ton panier !");
+        return;
+    }
+
+    const nom = document.getElementById("name").value;
+    const telephone = document.getElementById("phone").value;
+
+    const details = articles.map(p =>
+        `${p.nom} x${panier[p.id]} : ${monnaie(p.prix * panier[p.id])}`
+    ).join("\n");
+
+    const total = articles.reduce((somme, p) =>
+        somme + p.prix * panier[p.id], 0
+    );
+
+    const message =
+        `Bonjour KOSSIA SHOP !\n\n` +
+        `Je souhaite commander :\n${details}\n\n` +
+        `Total estimé : ${monnaie(total)}\n` +
+        `Nom : ${nom}\nTéléphone : ${telephone}\n\n` +
+        `Merci de confirmer ma commande.`;
+
+    // Remplacer ce numéro par celui de la boutique.
+    const numeroWhatsApp = "2250777079611";
+
+    if (!numeroWhatsApp) {
+        alert(
+            "Le numéro WhatsApp de la boutique n'est pas encore configuré.\n\n" +
+            "Voici le message à envoyer :\n\n" + message
+        );
+        return;
+    }
+
+    const url = "https://wa.me/" + numeroWhatsApp +
+        "?text=" + encodeURIComponent(message);
+
+    window.open(url, "_blank");
+});
+
+afficherProduits();
+afficherPanier();
+</script>
+
+</body>
+</html>
