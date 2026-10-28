@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#70213e">
+<title>Suivi de commande | KOSSIA SHOP</title>
+<meta name="description" content="Consulte le statut de ta commande KOSSIA SHOP avec ta référence de suivi et ton numéro de téléphone.">
+<link rel="canonical" href="https://kossia-shop.vercel.app/track-order.html">
+<style>
+:root{--wine:#70213e;--wine2:#451528;--cream:#fff8f4;--ink:#2e2025;--muted:#78666d;--line:#eadde1;--green:#24734b;--gold:#a16b15}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff8f4,#f4e8ec);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:20px}.wrap{width:min(100%,560px)}.brand{font:600 13px system-ui;letter-spacing:.18em;color:var(--wine);text-align:center;margin-bottom:14px}.card{background:white;border:1px solid var(--line);border-radius:24px;padding:clamp(20px,5vw,34px);box-shadow:0 18px 55px #45152813}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--wine);font-weight:800}h1{font:500 clamp(28px,7vw,38px) Georgia,serif;color:var(--wine2);margin:8px 0}p{color:var(--muted);font-size:14px;line-height:1.65}.field{display:grid;gap:7px;margin:16px 0}.field label{font-weight:700;font-size:12px}.field input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;outline-color:var(--wine)}button,.btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;border:0;border-radius:12px;background:var(--wine);color:white;padding:13px 17px;font-weight:800;text-decoration:none;cursor:pointer;width:100%}button:disabled{opacity:.6}.notice{margin-top:14px;padding:12px;border-radius:12px;background:#fff0f1;color:#8a253b;font-size:13px;line-height:1.5}.notice.ok{background:#edf8f0;color:var(--green)}.result{margin-top:22px;border-top:1px solid var(--line);padding-top:20px}.status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:#fff2dc;color:#80530f;padding:8px 12px;font-size:12px;font-weight:800}.status.confirmed,.status.delivered{background:#eaf7ee;color:var(--green)}.status.cancelled{background:#fff0f1;color:#9b263d}.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.meta>div{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}.meta small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.meta strong{font-size:13px;overflow-wrap:anywhere}.items{padding-left:18px;color:var(--ink);font-size:13px;line-height:1.8}.total{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:14px;font-weight:800}.fine{font-size:11px;margin-top:18px}.back{display:block;text-align:center;margin:16px auto;color:var(--wine);font-size:13px;font-weight:700}@media(max-width:380px){.meta{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand">KOSSIA SHOP</div>
+<section class="card">
+<span class="eyebrow">Espace client</span>
+<h1>Où en est ta commande ?</h1>
+<p>Entre la référence de suivi reçue après ta demande et le numéro de téléphone utilisé pour commander. Seul le statut communiqué par la boutique fait foi.</p>
+<form id="trackForm">
+<div class="field"><label for="trackingCode">Référence de suivi</label><input id="trackingCode" required maxlength="20" autocomplete="off" placeholder="Ex. A1B2C3D4E5"></div>
+<div class="field"><label for="phone">Téléphone utilisé pour la commande</label><input id="phone" required type="tel" maxlength="30" autocomplete="tel" placeholder="Ex. 07 00 00 00 00"></div>
+<button id="submitBtn" type="submit">Consulter le statut ↗</button>
+</form>
+<div id="notice" class="notice hidden" role="status"></div>
+<section id="result" class="result hidden" aria-live="polite"></section>
+</section>
+<a class="back" href="/">← Retour à KOSSIA SHOP</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-config.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString("fr-FR")+" FCFA";
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const labels={pending:"En attente de confirmation",confirmed:"Commande confirmée",shipped:"Commande expédiée",delivered:"Commande livrée",cancelled:"Commande annulée"};
+function notice(text,ok){const el=$("notice");el.textContent=text;el.className="notice"+(ok?" ok":"");el.classList.remove("hidden")}
+function render(o){const status=o.status||"pending",items=Array.isArray(o.items)?o.items:[];const lines=items.map(i=>"<li>"+safe(i.name||"Article")+" × "+Number(i.quantity||1)+"</li>").join("");$("result").innerHTML='<span class="eyebrow">Référence '+safe(o.tracking_code)+'</span><h2 style="font:500 24px Georgia,serif;color:var(--wine2);margin:8px 0 12px">Bonjour '+safe(o.customer_name||"")+'</h2><span class="status '+safe(status)+'">● '+safe(labels[status]||status)+'</span><div class="meta"><div><small>Demande créée le</small><strong>'+safe(new Date(o.created_at).toLocaleString("fr-FR"))+'</strong></div><div><small>Zone de livraison</small><strong>'+safe(o.delivery_area||"À confirmer")+'</strong></div><div><small>Paiement souhaité</small><strong>'+safe(o.payment_method||"À confirmer")+'</strong></div><div><small>Dernière mise à jour</small><strong>'+safe(new Date(o.updated_at).toLocaleString("fr-FR"))+'</strong></div></div><h3 style="font-size:13px">Articles demandés</h3><ul class="items">'+lines+'</ul><div class="total"><span>Total des articles</span><span>'+money(o.total_xof)+'</span></div><p class="fine">'+(status==="pending"?"Ta demande est bien enregistrée, mais elle n’est pas encore validée. Attends la confirmation de la boutique sur WhatsApp.":status==="confirmed"?"La boutique a confirmé la commande. Suis les prochaines mises à jour ici.":status==="cancelled"?"Cette commande a été annulée. Contacte la boutique si tu as besoin d’une précision.":"Le statut de ta commande a été mis à jour par la boutique.")+'</p><button type="button" id="refreshBtn">Actualiser le statut</button>';$("result").classList.remove("hidden");$("refreshBtn").addEventListener("click",()=>lookup(false))}
+async function lookup(showLoading){const code=$("trackingCode").value.trim().toUpperCase(),phone=$("phone").value.trim();if(!code||!phone)return;if(!window.supabase||!window.KOSSIA_SUPABASE_URL||!window.KOSSIA_SUPABASE_PUBLISHABLE_KEY){notice("Le service de suivi est momentanément indisponible. Réessaie plus tard.");return}const btn=$("submitBtn");btn.disabled=true;btn.textContent="Recherche…";$("result").classList.add("hidden");try{const db=window.supabase.createClient(window.KOSSIA_SUPABASE_URL,window.KOSSIA_SUPABASE_PUBLISHABLE_KEY);const {data,error}=await db.rpc("get_public_order_status",{p_tracking_code:code,p_customer_phone:phone});if(error)throw error;if(!data||data.found!==true){notice("Aucune commande trouvée avec cette référence et ce numéro. Vérifie les deux informations.");return}notice("Statut récupéré. Tu peux revenir ici à tout moment pour consulter les mises à jour.",true);render(data)}catch(e){notice("Impossible de consulter le statut. Si le suivi vient d’être activé, la boutique doit peut-être encore appliquer la migration Supabase.")}finally{btn.disabled=false;btn.textContent="Consulter le statut ↗"}}
+$("trackForm").addEventListener("submit",e=>{e.preventDefault();lookup(true)});const params=new URLSearchParams(location.search);if(params.get("code"))$("trackingCode").value=params.get("code").toUpperCase();
+})();
+</script></body></html>
