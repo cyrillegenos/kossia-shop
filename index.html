@@ -418,14 +418,38 @@ function afficherProduits(categorie = categorieActuelle) {
   liste.forEach(p => {
     const article = document.createElement("div");
     article.className = "product";
-    const visuel = p.image_url
-      ? '<img src="' + echapperTexte(p.image_url) + '" alt="' + echapperTexte(p.nom) + '" loading="lazy" style="width:100%;height:110px;object-fit:contain;background:#f6e4e8;border-radius:10px;margin-bottom:12px" onerror="this.outerHTML=\'<div class=&quot;emoji&quot;>\'+' + JSON.stringify(echapperTexte(p.emoji || "🛍️")) + '+\'</div>\'">'
-      : '<div class="emoji">' + echapperTexte(p.emoji || "🛍️") + '</div>';
-    article.innerHTML = visuel + '<h3>' + echapperTexte(p.nom) + '</h3>' +
-      '<p class="price">' + monnaie(p.prix) + '</p>' +
-      (Number(p.stock ?? 0) <= 0 && p.stock !== undefined
-        ? '<button class="btn" disabled style="opacity:.55">Rupture de stock</button>'
-        : '<button class="btn" onclick="ajouter(' + JSON.stringify(String(p.id)).replace(/</g,"\\u003c") + ')">Ajouter au panier +</button>');
+    if (p.image_url) {
+      const image = document.createElement("img");
+      image.src = p.image_url;
+      image.alt = p.nom;
+      image.loading = "lazy";
+      image.style.cssText = "width:100%;height:110px;object-fit:contain;background:#f6e4e8;border-radius:10px;margin-bottom:12px";
+      image.onerror = () => {
+        const fallback = document.createElement("div");
+        fallback.className = "emoji";
+        fallback.textContent = p.emoji || "🛍️";
+        image.replaceWith(fallback);
+      };
+      article.appendChild(image);
+    } else {
+      const visuel = document.createElement("div");
+      visuel.className = "emoji";
+      visuel.textContent = p.emoji || "🛍️";
+      article.appendChild(visuel);
+    }
+    const titre = document.createElement("h3");
+    titre.textContent = p.nom;
+    article.appendChild(titre);
+    const prix = document.createElement("p");
+    prix.className = "price";
+    prix.textContent = monnaie(p.prix);
+    article.appendChild(prix);
+    const bouton = document.createElement("button");
+    bouton.className = "btn";
+    bouton.textContent = Number(p.stock ?? 0) <= 0 && p.stock !== undefined ? "Rupture de stock" : "Ajouter au panier +";
+    bouton.disabled = Number(p.stock ?? 0) <= 0 && p.stock !== undefined;
+    bouton.addEventListener("click", () => ajouter(p.id));
+    article.appendChild(bouton);
     conteneur.appendChild(article);
   });
 }
