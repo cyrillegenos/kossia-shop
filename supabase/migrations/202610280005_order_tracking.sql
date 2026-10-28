@@ -86,7 +86,7 @@ begin
     ));
   end loop;
 
-  v_tracking_code := upper(encode(gen_random_bytes(5), 'hex'));
+  v_tracking_code := upper(substr(replace(extensions.gen_random_uuid()::text, '-', ''), 1, 10));
   insert into public.orders (
     customer_name, customer_phone, delivery_area, delivery_address,
     items, total_xof, status, customer_note, payment_method, map_link, tracking_code
