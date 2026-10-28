@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /supabase-config.js
+
+Sitemap: https://kossia-shop.vercel.app/sitemap.xml
