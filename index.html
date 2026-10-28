@@ -113,6 +113,10 @@ section h2 {
     color: white;
 }
 
+.store-search { margin: 18px 0; }
+.store-search input { width:100%; padding:14px 16px; border:1px solid #eadde0; border-radius:12px; font:inherit; background:white; outline-color:#792642; }
+.search-count { color:#766c70; font-size:13px; margin-top:7px; }
+
 .products {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -306,7 +310,7 @@ footer a {
         <button class="category" data-cat="Beauté">Beauté</button>
     </div>
 
-    <br>
+    <div class="store-search"><input id="storeSearch" type="search" placeholder="🔎 Rechercher un produit…" aria-label="Rechercher un produit"><p id="searchCount" class="search-count"></p></div>
 
     <div class="products" id="products"></div>
 </section>
@@ -400,7 +404,7 @@ const produitsInitiaux = [
 let produits = produitsInitiaux.slice();
 let panier = {};
 let categorieActuelle = "Tous";
-let chargementSupabase = false;
+let rechercheActuelle = "";
 
 function monnaie(nombre) { return Number(nombre || 0).toLocaleString("fr-FR") + " FCFA"; }
 function echapperTexte(valeur) {
@@ -410,7 +414,9 @@ function afficherProduits(categorie = categorieActuelle) {
   categorieActuelle = categorie;
   const conteneur = document.getElementById("products");
   conteneur.innerHTML = "";
-  const liste = produits.filter(p => categorie === "Tous" || p.categorie === categorie);
+  const liste = produits.filter(p => (categorie === "Tous" || p.categorie === categorie) && ((p.nom || "").toLocaleLowerCase("fr").includes(rechercheActuelle) || (p.description || "").toLocaleLowerCase("fr").includes(rechercheActuelle) || (p.categorie || "").toLocaleLowerCase("fr").includes(rechercheActuelle)));
+  const compteur = document.getElementById("searchCount");
+  if (compteur) compteur.textContent = rechercheActuelle ? liste.length + " résultat(s) pour « " + document.getElementById("storeSearch").value.trim() + " »" : liste.length + " article(s) affiché(s)";
   if (!liste.length) {
     conteneur.innerHTML = '<p class="empty">Aucun produit dans cette catégorie pour le moment.</p>';
     return;
@@ -484,6 +490,7 @@ function modifier(id, changement) {
   if (panier[id] <= 0) delete panier[id];
   afficherPanier();
 }
+document.getElementById("storeSearch").addEventListener("input", event => {rechercheActuelle = event.target.value.trim().toLocaleLowerCase("fr"); afficherProduits(categorieActuelle);});
 document.querySelectorAll(".category").forEach(bouton => {
   bouton.addEventListener("click", () => {
     document.querySelectorAll(".category").forEach(b => b.classList.toggle("active", b === bouton));
