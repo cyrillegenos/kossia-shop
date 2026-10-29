@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="5d5b8TKHAgtu5hKiDYkxewcRrUFyW8fEhXZrl6pw5q4" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#6f203d">
+<meta name="theme-color" content="#6f203d" id="browserThemeColor">
 <meta name="description" content="Découvre KOSSIA SHOP en Côte d’Ivoire : mode, beauté et accessoires. Parcours la boutique, prépare ta commande et confirme la livraison sur WhatsApp.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://kossia-shop.vercel.app/">
@@ -83,6 +83,51 @@
 .client-drawer-trigger{white-space:nowrap}
 @media(max-width:650px){.client-drawer-trigger{font-size:11px;padding:9px 10px}.client-drawer{padding-bottom:24px}.client-drawer-section{padding:14px}}
 
+
+/* Interaction polish: tactile feedback, accessible focus and reduced motion */
+button,.btn,.icon-btn,.category,.favorite-btn,.edith-launch,.help-fab{transition:transform .16s ease,box-shadow .18s ease,background-color .18s ease,color .18s ease,border-color .18s ease}
+button:active,.btn:active,.icon-btn:active,.category:active,.favorite-btn:active,.edith-launch:active,.help-fab:active{transform:scale(.965)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media (hover:hover){.icon-btn:hover,.category:hover,.favorite-btn:hover{box-shadow:0 5px 14px #70213e18}.favorite-btn:hover{transform:scale(1.07)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Respect the visitor's phone or browser light/dark appearance */
+@media (prefers-color-scheme:dark){
+ :root{color-scheme:dark;--wine:#e6a0b7;--wine2:#f3c5d4;--rose:#392630;--rose2:#503541;--cream:#171316;--ink:#f6edf0;--muted:#c1adb5;--line:#493740;--white:#211a1f;--gold:#e1bd8a;--green:#60d2a5}
+ body{background:var(--cream);color:var(--ink)}
+ .site-header{background:#211a1fee;border-color:var(--line)}
+ .brand strong,.section-head h2,.info-card h3,.cart-box h3,.checkout-box h3{color:var(--wine2)!important}
+ .brand small,.main-nav a,.hero p,.section-head p,.result-line,.product-desc,.info-card p,.info-card li,.faq details p,.fineprint{color:var(--muted)}
+ .main-nav a:hover{color:var(--wine)}
+ .icon-btn,.category,.search-wrap input,.search-tools select,.product,.benefit,.info-card,.cart-box,.checkout-box,.empty,.cart-row,.edith-chat,.edith-quick button,.edith-input-row input,.client-drawer,.client-drawer-section,.client-drawer input,.client-drawer textarea,.client-drawer select{background:#241c22;color:var(--ink);border-color:var(--line)}
+ .category.active,.category:hover{background:var(--wine);color:#21151b;border-color:var(--wine)}
+ .hero-panel{background:linear-gradient(120deg,#38232d 0%,#30251f 58%,#3d2731 100%)}
+ .hero h1{color:var(--wine2)}
+ .hero p{color:#e0cbd3}
+ .benefit{background:#211a1f}
+ .product-visual{background:linear-gradient(145deg,#352630,#30251f)}
+ .product-visual img{mix-blend-mode:normal}
+ .product-tag{background:#30251f;color:#f5d8e2}
+ .favorite-btn{background:#2b2027ed;color:var(--wine);border-color:var(--line)}
+ .favorite-btn.active{background:var(--wine);color:#21151b}
+ .price{color:var(--wine)}
+ .btn{background:var(--wine);border-color:var(--wine);color:#24151c}
+ .btn:hover{background:#f0b8cb;border-color:#f0b8cb}
+ .btn-light{background:#2b2027;color:var(--wine);border-color:var(--line)}
+ .announcement{background:#100d10}
+ .footer{background:#100d10;color:var(--ink)}
+ .footer a,.footer p,.footer-bottom{color:var(--muted)}
+ .total-line{border-color:var(--line)}
+ .qty-controls button{background:#352630;color:var(--ink);border-color:var(--line)}
+ .client-drawer-backdrop{background:#000b}
+ .edith-head{background:#30212a}
+ .edith-msg.bot{background:#352630;color:var(--ink)}
+ .edith-msg.user{background:var(--wine);color:#24151c}
+ .edith-quick button{background:#2b2027;color:var(--ink);border-color:var(--line)}
+ .location-panel,.promo-card{background:#2b2027;border-color:var(--line)}
+ .info-card[style*="linear-gradient"]{background:linear-gradient(120deg,#38232d,#30251f)!important}
+ input,textarea,select{accent-color:var(--wine)}
+}
+
 </style>
 </head>
 <body>
@@ -153,6 +198,9 @@
 (function(){
 "use strict";
 const $=id=>document.getElementById(id);
+const systemTheme=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;
+function syncBrowserTheme(e){const dark=(e&&typeof e.matches==="boolean")?e.matches:!!(systemTheme&&systemTheme.matches);const meta=$("browserThemeColor");if(meta)meta.setAttribute("content",dark?"#171316":"#6f203d");}
+syncBrowserTheme();if(systemTheme){if(systemTheme.addEventListener)systemTheme.addEventListener("change",syncBrowserTheme);else if(systemTheme.addListener)systemTheme.addListener(syncBrowserTheme)}
 const DEFAULTS={store_name:"KOSSIA SHOP",tagline:"Découvre une sélection de vêtements, bijoux, parfums et accessoires pensés pour compléter ton style, au quotidien comme pour les grandes occasions.",whatsapp:"2250777079611",support_whatsapp:"2250141987202",delivery_zones:"Les zones de livraison sont confirmées avec la boutique au moment de la commande.",delivery_time:"Délai confirmé après validation.",delivery_fee_text:"Frais communiqués avant confirmation.",payment_methods:"Modalités de paiement confirmées par WhatsApp",returns_policy:"Contacte la boutique avant tout retour ou échange afin de confirmer les conditions applicables.",about_text:"Une sélection de mode, beauté et accessoires pour affirmer ton style.",instagram_url:"",facebook_url:""};
 const fallbackProducts=[{id:"legacy-1",name:"Sweat Brooklyn",price_xof:8500,category:"Vêtements",emoji:"👕",description:"Une pièce décontractée pour compléter ton look.",stock:20},{id:"legacy-2",name:"Robe cerises",price_xof:7500,category:"Vêtements",emoji:"👗",description:"Une touche fraîche et originale.",stock:20},{id:"legacy-3",name:"Bracelets papillon",price_xof:2500,category:"Bijoux",emoji:"📿",description:"Un détail délicat pour ton style.",stock:20},{id:"legacy-4",name:"Bracelets bleus",price_xof:2000,category:"Bijoux",emoji:"💎",description:"Des accessoires faciles à associer.",stock:20},{id:"legacy-5",name:"Gourde tendance",price_xof:3000,category:"Accessoires",emoji:"🥤",description:"Pratique pour accompagner tes journées.",stock:20},{id:"legacy-6",name:"Lunettes solaires",price_xof:4500,category:"Accessoires",emoji:"🕶️",description:"Une finition stylée pour tes sorties.",stock:20},{id:"legacy-7",name:"Parfum signature",price_xof:10000,category:"Beauté",emoji:"🌸",description:"Une touche parfumée pour compléter ta routine.",stock:20},{id:"legacy-8",name:"Sac élégant",price_xof:9000,category:"Accessoires",emoji:"👜",description:"Le compagnon de tes essentiels.",stock:20}];
 let products=fallbackProducts.slice(),cart={},category="Tous",query="",settings={...DEFAULTS},sort="featured",db=null;
