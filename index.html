@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="5d5b8TKHAgtu5hKiDYkxewcRrUFyW8fEhXZrl6pw5q4" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#6f203d" id="browserThemeColor">
+<meta name="theme-color" content="#70213e" id="browserThemeColor">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KOSSIA SHOP">
 <meta name="description" content="Découvre KOSSIA SHOP en Côte d’Ivoire : mode, beauté et accessoires. Parcours la boutique, prépare ta commande et confirme la livraison sur WhatsApp.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://kossia-shop.vercel.app/">
@@ -132,6 +137,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  input,textarea,select{accent-color:var(--wine)}
 }
 
+.install-app-btn{border-color:var(--gold);background:var(--rose);color:var(--wine);white-space:nowrap}.install-app-btn span{display:inline}.install-app-btn[hidden]{display:none!important}
+@media(max-width:520px){.header-inner{gap:8px;padding:12px 10px}.brand strong{font-size:18px;letter-spacing:1px}.brand small{font-size:8px;letter-spacing:1px}.header-actions{gap:5px}.header-actions .icon-btn{padding:8px 9px;font-size:12px}.install-app-btn span{display:none}}
 </style>
 </head>
 <body>
@@ -139,7 +146,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 <header class="site-header"><div class="header-inner">
 <a class="brand" href="#accueil"><strong id="brandName">KOSSIA SHOP</strong><small>MODE · BEAUTÉ · ACCESSOIRES</small></a>
 <nav class="main-nav" id="mainNav"><a href="#accueil">Accueil</a><a href="#boutique">La boutique</a><a href="#livraison">Livraison & infos</a><a href="#faq">FAQ</a></nav>
-<div class="header-actions"><a class="icon-btn" href="#panier" aria-label="Voir le panier">🛍️ <span id="cartCount">0</span></a><button class="icon-btn client-drawer-trigger" id="clientDrawerOpen" type="button" aria-controls="clientDrawer" aria-expanded="false">Espace client</button><button class="icon-btn menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">☰</button></div>
+<div class="header-actions"><a class="icon-btn" href="#panier" aria-label="Voir le panier">🛍️ <span id="cartCount">0</span></a><button class="icon-btn install-app-btn" id="installAppBtn" type="button" aria-label="Installer KOSSIA SHOP">📲 <span>Installer</span></button><button class="icon-btn client-drawer-trigger" id="clientDrawerOpen" type="button" aria-controls="clientDrawer" aria-expanded="false">Espace client</button><button class="icon-btn menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">☰</button></div>
 </div></header>
 
 <div class="client-drawer-backdrop" id="clientDrawerBackdrop"></div>
@@ -405,6 +412,55 @@ function edithAdd(text,who){const box=$("edithMessages"),msg=document.createElem
 function edithAsk(text){const clean=String(text||"").trim();if(!clean)return;edithAdd(clean,"user");edithAdd(edithReply(clean),"bot")}
 $("edithLaunch").addEventListener("click",()=>{const opened=$("edithChat").classList.contains("hidden");$("edithChat").classList.toggle("hidden");$("edithLaunch").setAttribute("aria-expanded",String(opened));if(opened)$("edithInput").focus()});$("edithClose").addEventListener("click",()=>{$("edithChat").classList.add("hidden");$("edithLaunch").setAttribute("aria-expanded","false")});$("edithForm").addEventListener("submit",e=>{e.preventDefault();edithAsk($("edithInput").value);$("edithInput").value=""});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>edithAsk(({livraison:"Comment fonctionne la livraison ?",paiement:"Quels modes de paiement acceptez-vous ?",produits:"Quels produits et prix sont disponibles ?",commande:"Comment passer une commande ?",retours:"Quelle est la politique de retour ?",contact:"Comment contacter la boutique ?"})[b.dataset.ask])));
 $("year").textContent=new Date().getFullYear();applySettings(DEFAULTS);renderProducts();renderCart();loadRemote();
+})();
+</script>
+<script>
+(() => {
+  const installButton = document.getElementById("installAppBtn");
+  if (!installButton) return;
+  let installPrompt = null;
+  const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  if (isStandalone()) installButton.hidden = true;
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    installPrompt = event;
+    installButton.hidden = false;
+    installButton.title = "Installer KOSSIA SHOP sur cet appareil";
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installPrompt = null;
+    installButton.hidden = true;
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (isStandalone()) {
+      installButton.hidden = true;
+      return;
+    }
+    if (installPrompt) {
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      return;
+    }
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isIOS) {
+      alert("Pour ajouter KOSSIA SHOP à l’écran d’accueil : ouvre le menu Partager de Safari, puis choisis « Sur l’écran d’accueil ».");
+    } else if (isAndroid) {
+      alert("Pour installer KOSSIA SHOP : ouvre le menu ⋮ de Chrome, puis choisis « Installer l’application » ou « Ajouter à l’écran d’accueil ».");
+    } else {
+      alert("Pour installer KOSSIA SHOP, ouvre le menu de ton navigateur puis choisis « Installer l’application » ou « Créer un raccourci ».");
+    }
+  });
+
+  if ("serviceWorker" in navigator && window.isSecureContext) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch((error) => console.warn("PWA : enregistrement du service worker impossible", error));
+    });
+  }
 })();
 </script>
 </body></html>
