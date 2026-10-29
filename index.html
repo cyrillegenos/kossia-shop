@@ -59,6 +59,10 @@
 .client-drawer-head{position:sticky;top:0;z-index:2;margin:0 -18px 16px;padding:20px 18px 15px;background:#fffdfbf2;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
 .client-drawer-head strong{display:block;color:var(--wine2);font:500 24px Georgia,serif}.client-drawer-head small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
 .client-drawer-close{border:1px solid var(--line);background:#fff;color:var(--wine);width:38px;height:38px;border-radius:50%;font-size:23px}
+.account-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.account-actions>*{flex:1;min-width:115px}
+.account-orders{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}.account-orders h4{margin:0 0 9px;color:var(--wine2);font-size:14px}
+.account-order{border:1px solid var(--line);border-radius:12px;padding:11px;margin:8px 0;background:var(--cream)}.account-order strong{display:block;color:var(--wine2);font-size:13px}.account-order p{margin:4px 0;font-size:12px}.account-order a{color:var(--wine);font-weight:700;font-size:12px}
+#customerAccountSection [hidden]{display:none!important}
 .client-drawer-section{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px;margin:13px 0}
 .client-drawer-section h3{font:500 20px Georgia,serif;color:var(--wine2);margin:0 0 7px}
 .client-drawer-section p{font-size:12px;color:var(--muted);line-height:1.65;margin:7px 0 12px}
@@ -141,6 +145,31 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 <div class="client-drawer-backdrop" id="clientDrawerBackdrop"></div>
 <aside class="client-drawer" id="clientDrawer" aria-label="Espace client" aria-hidden="true">
   <div class="client-drawer-head"><div><strong>Espace client ✦</strong><small>Le petit centre de commande KOSSIA</small></div><button class="client-drawer-close" id="clientDrawerClose" type="button" aria-label="Fermer le panneau">×</button></div>
+  <section class="client-drawer-section" id="customerAccountSection">
+    <h3>👤 Mon compte KOSSIA</h3>
+    <p>Connecte-toi pour retrouver ton profil, tes favoris et tes commandes sur tes appareils.</p>
+    <div id="customerAuthPanel">
+      <form id="customerAuthForm">
+        <div class="field"><label for="accountEmail">Adresse e-mail</label><input id="accountEmail" type="email" autocomplete="email" required maxlength="254" placeholder="toi@exemple.com"></div>
+        <div class="field"><label for="accountPassword">Mot de passe</label><input id="accountPassword" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="8 caractères minimum"></div>
+        <div class="account-actions"><button class="drawer-action" type="submit" id="accountLoginBtn">Se connecter</button><button class="btn btn-outline" type="button" id="accountRegisterBtn">Créer mon compte</button></div>
+      </form>
+      <p class="fineprint" id="accountAuthMessage" role="status" aria-live="polite"></p>
+    </div>
+    <div id="customerProfilePanel" hidden>
+      <p id="accountSignedInLabel"></p>
+      <form id="customerProfileForm">
+        <div class="field"><label for="accountFullName">Nom complet</label><input id="accountFullName" autocomplete="name" maxlength="120" required></div>
+        <div class="field"><label for="accountPhone">Téléphone</label><input id="accountPhone" type="tel" autocomplete="tel" maxlength="30"></div>
+        <div class="field"><label for="accountArea">Commune / ville préférée</label><input id="accountArea" maxlength="120" autocomplete="address-level2"></div>
+        <div class="field"><label for="accountAddress">Adresse ou repère de livraison</label><textarea id="accountAddress" maxlength="500" autocomplete="street-address"></textarea></div>
+        <button class="drawer-action" type="submit" id="accountProfileSave">Enregistrer mon profil</button>
+      </form>
+      <div class="account-orders"><h4>📦 Mes commandes</h4><div id="accountOrdersList" class="fineprint">Chargement…</div></div>
+      <div class="account-actions"><button class="btn btn-outline" type="button" id="accountRefreshBtn">Actualiser</button><button class="btn btn-outline" type="button" id="accountLogoutBtn">Se déconnecter</button></div>
+      <p class="fineprint" id="accountProfileMessage" role="status" aria-live="polite"></p>
+    </div>
+  </section>
   <section class="client-drawer-section" id="drawerOrderTracking">
     <h3>📦 Où en est ma commande ?</h3>
     <p>Entre la référence reçue sur WhatsApp et le numéro utilisé lors de la commande pour consulter le statut confirmé par la boutique.</p>
@@ -214,7 +243,7 @@ function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show")
 function applySettings(s){settings={...DEFAULTS,...(s||{})};$("brandName").textContent=settings.store_name;$("footerBrand").textContent=settings.store_name;document.title=settings.store_name+" | Ton style, ta signature";$("heroTagline").textContent=settings.tagline;$("aboutText").textContent=settings.about_text;$("deliveryZones").textContent=settings.delivery_zones;$("deliveryTime").textContent=settings.delivery_time;$("deliveryFee").textContent=settings.delivery_fee_text;$("shippingEstimate").textContent="Livraison : "+settings.delivery_fee_text+" Les frais exacts sont confirmés avant validation.";$("benefitDelivery").textContent=settings.delivery_time;$("paymentInfo").textContent=String(settings.payment_methods||"Wave")+" . Autres possibilités à confirmer avant paiement : Orange Money, MTN MoMo, Moov Money ou paiement à la livraison.";$("returnsInfo").textContent=settings.returns_policy;const wa=phoneForLink(settings.whatsapp)||DEFAULTS.whatsapp,support=phoneForLink(settings.support_whatsapp)||DEFAULTS.support_whatsapp;$("contactCta").href="https://wa.me/"+wa;$("footerWhatsapp").href="https://wa.me/"+wa;$("footerSupport").href="https://wa.me/"+support;$("helpButton").href="https://wa.me/"+support;$("footerInstagram").classList.toggle("hidden",!settings.instagram_url);if(settings.instagram_url)$("footerInstagram").href=settings.instagram_url;$("footerFacebook").classList.toggle("hidden",!settings.facebook_url);if(settings.facebook_url)$("footerFacebook").href=settings.facebook_url;const select=$("paymentMethod"),old=select.value;const configured=String(settings.payment_methods||"").split(/[;,\n]/).map(x=>x.trim()).filter(Boolean);const methods=[...configured];[["Orange Money (à confirmer)",/orange money/i],["MTN MoMo (à confirmer)",/mtn|momo/i],["Moov Money (à confirmer)",/moov money/i],["Paiement à la livraison (à confirmer)",/livraison/i]].forEach(([label,re])=>{if(!methods.some(m=>re.test(m)))methods.push(label)});select.innerHTML="";(methods.length?methods:["Wave (actuellement proposé)"]).forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;select.appendChild(o)});if([...select.options].some(o=>o.value===old))select.value=old}
 function visibleProducts(){let list=products.filter(p=>(category==="Tous"||(category==="Favoris"&&favorites.has(String(p.id)))||normalize(p.category)===normalize(category))&&[p.name,p.description,p.category].some(v=>normalize(v).includes(normalize(query))));if(sort==="price-asc")list.sort((a,b)=>Number(a.price_xof)-Number(b.price_xof));if(sort==="price-desc")list.sort((a,b)=>Number(b.price_xof)-Number(a.price_xof));if(sort==="name")list.sort((a,b)=>String(a.name).localeCompare(String(b.name),"fr"));return list}
 function renderProducts(){const host=$("products"),list=visibleProducts();$("searchCount").textContent=query?list.length+" résultat(s) pour « "+$("storeSearch").value.trim()+" »":list.length+" article(s) disponible(s)";host.innerHTML="";if(!list.length){host.innerHTML='<div class="empty">'+(category==="Favoris"?"Tu n’as pas encore ajouté de favori. Appuie sur le cœur d’un article pour le retrouver ici.":"Aucun article ne correspond à cette recherche.<br>Essaie un autre mot ou choisis « Tout voir ».")+"</div>";return}list.forEach(p=>{const card=document.createElement("article");card.className="product";const visual=document.createElement("div");visual.className="product-visual";if(p.image_url){const img=document.createElement("img");img.src=p.image_url;img.alt=p.name;img.loading="lazy";img.onerror=()=>{visual.innerHTML='<span class="emoji">'+escapeHtml(p.emoji||"🛍️")+"</span>"};visual.appendChild(img)}else{const em=document.createElement("span");em.className="emoji";em.textContent=p.emoji||"🛍️";visual.appendChild(em)}if(Number(p.stock)>0&&Number(p.stock)<=3){const tag=document.createElement("span");tag.className="product-tag";tag.textContent="DERNIÈRES PIÈCES";visual.appendChild(tag)}const fav=document.createElement("button");fav.type="button";fav.className="favorite-btn"+(favorites.has(String(p.id))?" active":"");fav.textContent=favorites.has(String(p.id))?"♥":"♡";fav.setAttribute("aria-label",favorites.has(String(p.id))?"Retirer "+(p.name||"cet article")+" des favoris":"Ajouter "+(p.name||"cet article")+" aux favoris");fav.title=fav.getAttribute("aria-label");fav.addEventListener("click",()=>toggleFavorite(p.id));visual.appendChild(fav);card.appendChild(visual);const h=document.createElement("h3");h.textContent=p.name||"Article";card.appendChild(h);if(p.description){const d=document.createElement("p");d.className="product-desc";d.textContent=p.description;card.appendChild(d)}const price=document.createElement("p");price.className="price";price.textContent=money(p.price_xof);card.appendChild(price);const b=document.createElement("button");b.className="btn";b.textContent=Number(p.stock??1)<=0?"Indisponible":"Ajouter au panier +";b.disabled=Number(p.stock??1)<=0;b.addEventListener("click",()=>addToCart(p.id));card.appendChild(b);host.appendChild(card)})}
-function toggleFavorite(id){const key=String(id);if(favorites.has(key)){favorites.delete(key);toast("Article retiré des favoris.")}else{favorites.add(key);toast("Article ajouté aux favoris ♥")}try{localStorage.setItem("kossia-shop-favorites",JSON.stringify([...favorites]))}catch(e){}renderProducts();document.querySelectorAll(".category").forEach(b=>b.classList.toggle("active",b.dataset.cat===category))}
+function toggleFavorite(id){const key=String(id);if(favorites.has(key)){favorites.delete(key);toast("Article retiré des favoris.")}else{favorites.add(key);toast("Article ajouté aux favoris ♥")}try{localStorage.setItem("kossia-shop-favorites",JSON.stringify([...favorites]))}catch(e){}if(customerSession)saveFavoritesCloud([...favorites]).catch(err=>console.warn("Favoris non synchronisés",err));renderProducts();document.querySelectorAll(".category").forEach(b=>b.classList.toggle("active",b.dataset.cat===category))}
 function showCart(){const section=$("panier");section.classList.remove("hidden");section.scrollIntoView({behavior:"smooth",block:"start"})}
 function showCheckout(){if(!Object.values(cart).some(q=>Number(q)>0)){toast("Ajoute d’abord un article au panier.");return}showCart();$("orderForm").classList.remove("hidden");$("checkoutStartBtn").classList.add("hidden");setTimeout(()=>$("customerName").focus({preventScroll:true}),250)}
 function hideCheckout(){ $("orderForm").classList.add("hidden");$("checkoutStartBtn").classList.remove("hidden");$("checkoutStartBtn").focus({preventScroll:true}) }
@@ -246,7 +275,88 @@ async function loadPromotions(){
  catch(e){console.warn("Promotions non disponibles",e);const host=$("drawerPromotions");if(host)host.innerHTML='<p class="fineprint">Les promotions ne sont pas disponibles pour le moment.</p>';}
 }
 
-async function loadRemote(){if(!window.supabase||!window.KOSSIA_SUPABASE_URL||!window.KOSSIA_SUPABASE_PUBLISHABLE_KEY)return;try{db=window.supabase.createClient(window.KOSSIA_SUPABASE_URL,window.KOSSIA_SUPABASE_PUBLISHABLE_KEY);const [pr,sr]=await Promise.all([db.from("products").select("id,name,description,price_xof,category,image_url,stock,active,emoji").eq("active",true).order("created_at",{ascending:false}),db.from("store_settings").select("settings").eq("id","main").maybeSingle()]);if(!pr.error&&Array.isArray(pr.data)&&pr.data.length){products=pr.data.map(p=>({...p,price_xof:Number(p.price_xof),stock:Number(p.stock??0)}));renderProducts()}if(!sr.error&&sr.data?.settings)applySettings(sr.data.settings);await loadPromotions()}catch(e){console.warn("Chargement distant indisponible",e)}}
+
+let customerSession=null;
+let accountAction="login";
+function setAccountMessage(id,message){const el=$(id);if(el)el.textContent=message||""}
+function showCustomerAccount(session){
+ customerSession=session||null;
+ $("customerAuthPanel").hidden=!!customerSession;
+ $("customerProfilePanel").hidden=!customerSession;
+ $("clientDrawerOpen").textContent=customerSession?"Mon compte":"Espace client";
+ if(customerSession){$("accountSignedInLabel").textContent="Connecté : "+(session.user.email||"compte client");loadCustomerProfile();loadCustomerOrders();syncFavoritesFromCloud();}
+ else {setAccountMessage("accountAuthMessage","");$("accountOrdersList").textContent="Connecte-toi pour afficher tes commandes."}
+}
+async function initCustomerAccount(){
+ if(!db)return;
+ try{const {data,error}=await db.auth.getSession();if(error)throw error;showCustomerAccount(data.session);
+ db.auth.onAuthStateChange((_event,session)=>{customerSession=session||null;setTimeout(()=>showCustomerAccount(customerSession),0)});
+ }catch(err){console.warn("Session client indisponible",err);setAccountMessage("accountAuthMessage","Connexion au compte indisponible pour le moment.")}
+}
+$("customerAuthForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!db){setAccountMessage("accountAuthMessage","La boutique est momentanément indisponible.");return}
+ const email=$("accountEmail").value.trim(),password=$("accountPassword").value,btn=$("accountLoginBtn");
+ btn.disabled=true;setAccountMessage("accountAuthMessage",accountAction==="register"?"Création du compte…":"Connexion…");
+ try{
+  if(accountAction==="register"){
+   const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo:location.origin+"/"}});if(error)throw error;
+   if(data.session){showCustomerAccount(data.session);setAccountMessage("accountProfileMessage","Compte créé. Complète ton profil ci-dessous.");}
+   else setAccountMessage("accountAuthMessage","Compte créé. Vérifie ta boîte e-mail pour confirmer l’adresse, puis connecte-toi.");
+  }else{
+   const {data,error}=await db.auth.signInWithPassword({email,password});if(error)throw error;showCustomerAccount(data.session);setAccountMessage("accountAuthMessage","");
+  }
+ }catch(err){setAccountMessage("accountAuthMessage",err.message||"Impossible de traiter la demande. Vérifie les informations saisies.");}
+ finally{btn.disabled=false}
+});
+$("accountRegisterBtn").addEventListener("click",()=>{
+ accountAction=accountAction==="login"?"register":"login";
+ $("accountLoginBtn").textContent=accountAction==="register"?"Créer mon compte":"Se connecter";
+ $("accountRegisterBtn").textContent=accountAction==="register"?"J’ai déjà un compte":"Créer mon compte";
+ $("accountPassword").autocomplete=accountAction==="register"?"new-password":"current-password";
+ setAccountMessage("accountAuthMessage",accountAction==="register"?"Utilise une adresse e-mail valide et un mot de passe d’au moins 8 caractères.":"Connecte-toi avec ton adresse e-mail et ton mot de passe.");
+});
+$("accountLogoutBtn").addEventListener("click",async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){setAccountMessage("accountProfileMessage",error.message);return}showCustomerAccount(null);setAccountMessage("accountAuthMessage","Tu es déconnecté(e).")});
+$("customerProfileForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!db||!customerSession)return;const btn=$("accountProfileSave");btn.disabled=true;
+ try{const profile={user_id:customerSession.user.id,full_name:$("accountFullName").value.trim(),phone:$("accountPhone").value.trim(),delivery_area:$("accountArea").value.trim(),delivery_address:$("accountAddress").value.trim(),updated_at:new Date().toISOString()};
+ const {error}=await db.from("customer_profiles").upsert(profile,{onConflict:"user_id"});if(error)throw error;
+ $("customerName").value=profile.full_name;$("customerPhone").value=profile.phone;$("customerArea").value=profile.delivery_area;$("customerAddress").value=profile.delivery_address;
+ setAccountMessage("accountProfileMessage","Profil enregistré. Il sera disponible après reconnexion sur tes autres appareils.");
+ }catch(err){setAccountMessage("accountProfileMessage","Enregistrement impossible : "+(err.message||"réessaie."))}
+ finally{btn.disabled=false}
+});
+async function loadCustomerProfile(){
+ if(!db||!customerSession)return;
+ try{const {data,error}=await db.from("customer_profiles").select("full_name,phone,delivery_area,delivery_address").eq("user_id",customerSession.user.id).maybeSingle();if(error)throw error;
+ if(data){$("accountFullName").value=data.full_name||"";$("accountPhone").value=data.phone||"";$("accountArea").value=data.delivery_area||"";$("accountAddress").value=data.delivery_address||"";$("customerName").value=data.full_name||$("customerName").value;$("customerPhone").value=data.phone||$("customerPhone").value;$("customerArea").value=data.delivery_area||$("customerArea").value;$("customerAddress").value=data.delivery_address||$("customerAddress").value;}
+ }catch(err){console.warn("Profil client non chargé",err);setAccountMessage("accountProfileMessage","Le profil n’a pas pu être chargé. Exécute la migration SQL des comptes clients.")}
+}
+function orderStatusLabel(status){return ({pending:"En attente",confirmed:"Confirmée",shipped:"Expédiée",delivered:"Livrée",cancelled:"Annulée"})[status]||status||"Inconnu"}
+async function loadCustomerOrders(){
+ const host=$("accountOrdersList");if(!db||!customerSession){host.textContent="Connecte-toi pour afficher tes commandes.";return}host.textContent="Chargement de tes commandes…";
+ try{const {data,error}=await db.rpc("get_my_customer_orders");if(error)throw error;const orders=Array.isArray(data)?data:(data?data:[]);if(!orders.length){host.textContent="Aucune commande liée à ce compte pour le moment. Les prochaines commandes apparaîtront ici.";return}
+ host.innerHTML=orders.map(o=>{const items=Array.isArray(o.items)?o.items.map(it=>escapeHtml(it.name||"Article")+" × "+Number(it.quantity||1)).join(", "):"Articles de la commande";const code=escapeHtml(o.tracking_code||"");const url="./track-order.html?code="+encodeURIComponent(o.tracking_code||"");return '<article class="account-order"><strong>Réf. '+code+' · '+escapeHtml(orderStatusLabel(o.status))+'</strong><p>'+escapeHtml(items)+'</p><p>'+escapeHtml(money(o.total_xof))+' · '+escapeHtml(o.delivery_area||"Zone à confirmer")+'</p><p>'+escapeHtml(o.created_at?new Date(o.created_at).toLocaleDateString("fr-FR"):"")+'</p><a href="'+url+'">Suivre cette commande ↗</a></article>'}).join("");
+ }catch(err){console.warn("Historique client non chargé",err);host.textContent="Historique indisponible. Vérifie que la migration SQL des comptes clients a été exécutée."}
+}
+$("accountRefreshBtn").addEventListener("click",()=>{loadCustomerProfile();loadCustomerOrders();syncFavoritesFromCloud()});
+async function syncFavoritesFromCloud(){
+ if(!db||!customerSession)return;
+ try{const {data,error}=await db.from("customer_favorites").select("product_id").eq("user_id",customerSession.user.id);if(error)throw error;
+ const cloud=new Set((data||[]).map(x=>String(x.product_id)));
+ if(cloud.size){favorites=new Set([...favorites,...cloud]);await saveFavoritesCloud([...favorites]);}
+ else if(favorites.size){await saveFavoritesCloud([...favorites]);}
+ localStorage.setItem("kossia-shop-favorites",JSON.stringify([...favorites]));renderProducts();
+ }catch(err){console.warn("Favoris synchronisés partiellement",err)}
+}
+async function saveFavoritesCloud(ids){
+ if(!db||!customerSession)return;
+ const userId=customerSession.user.id;const {data:existing,error}=await db.from("customer_favorites").select("product_id").eq("user_id",userId);if(error)throw error;
+ const wanted=new Set(ids.map(String)),current=new Set((existing||[]).map(x=>String(x.product_id)));
+ const remove=[...current].filter(id=>!wanted.has(id));if(remove.length){const {error:e}=await db.from("customer_favorites").delete().eq("user_id",userId).in("product_id",remove);if(e)throw e}
+ const add=[...wanted].filter(id=>!current.has(id));if(add.length){const {error:e}=await db.from("customer_favorites").insert(add.map(product_id=>({user_id:userId,product_id})));if(e)throw e}
+}
+
+async function loadRemote(){if(!window.supabase||!window.KOSSIA_SUPABASE_URL||!window.KOSSIA_SUPABASE_PUBLISHABLE_KEY)return;try{db=window.supabase.createClient(window.KOSSIA_SUPABASE_URL,window.KOSSIA_SUPABASE_PUBLISHABLE_KEY);await initCustomerAccount();const [pr,sr]=await Promise.all([db.from("products").select("id,name,description,price_xof,category,image_url,stock,active,emoji").eq("active",true).order("created_at",{ascending:false}),db.from("store_settings").select("settings").eq("id","main").maybeSingle()]);if(!pr.error&&Array.isArray(pr.data)&&pr.data.length){products=pr.data.map(p=>({...p,price_xof:Number(p.price_xof),stock:Number(p.stock??0)}));renderProducts()}if(!sr.error&&sr.data?.settings)applySettings(sr.data.settings);await loadPromotions()}catch(e){console.warn("Chargement distant indisponible",e)}}
 $("storeSearch").addEventListener("input",e=>{query=e.target.value;renderProducts()});$("sortProducts").addEventListener("change",e=>{sort=e.target.value;renderProducts()});$("checkoutStartBtn").addEventListener("click",showCheckout);$("backToCartBtn").addEventListener("click",hideCheckout);document.querySelector('a[href="#panier"]').addEventListener("click",e=>{e.preventDefault();showCart()});document.querySelectorAll(".category").forEach(b=>b.addEventListener("click",()=>{category=b.dataset.cat;document.querySelectorAll(".category").forEach(x=>x.classList.toggle("active",x===b));renderProducts()}));$("menuToggle").addEventListener("click",()=>$("mainNav").classList.toggle("open"));document.querySelectorAll(".main-nav a").forEach(a=>a.addEventListener("click",()=>$("mainNav").classList.remove("open")));
 $("orderForm").addEventListener("submit",async e=>{e.preventDefault();const items=products.filter(p=>cart[p.id]);if(!items.length){toast("Ajoute d’abord un article au panier.");return}if(!db){toast("Le suivi de commande est indisponible. Réessaie lorsque la boutique est connectée.");return}const submitButton=$("orderForm").querySelector('button[type="submit"]');if(submitButton.disabled)return;submitButton.disabled=true;submitButton.textContent="Enregistrement…";try{const name=$("customerName").value.trim(),phone=$("customerPhone").value.trim(),area=$("customerArea").value.trim(),address=$("customerAddress").value.trim(),payment=$("paymentMethod").value,note=$("customerNote").value.trim(),mapLink=$("customerMapLink").value.trim();const orderItems=items.map(p=>({id:p.id,quantity:Number(cart[p.id]||0)}));const {data,error}=await db.rpc("create_public_order",{p_customer_name:name,p_customer_phone:phone,p_delivery_area:area,p_delivery_address:address,p_items:orderItems,p_payment_method:payment,p_customer_note:note,p_map_link:mapLink});if(error)throw error;const created=Array.isArray(data)?data[0]:data;if(!created?.tracking_code)throw new Error("La boutique n’a pas renvoyé de référence de suivi.");const trackingUrl=location.origin+"/track-order.html?code="+encodeURIComponent(created.tracking_code);const lines=items.map(p=>"• "+p.name+" × "+cart[p.id]).join("\n");const msg="Bonjour "+settings.store_name+" ! Je viens d’enregistrer une demande de commande.\n\nRéférence de suivi : "+created.tracking_code+"\nSuivre l’état : "+trackingUrl+"\n\nArticles demandés :\n"+lines+"\n\nTotal des articles calculé par la boutique : "+money(created.total_xof)+"\n\nNom : "+name+"\nTéléphone : "+phone+"\nCommune / ville : "+area+"\nAdresse / repère : "+address+"\n"+(mapLink?"Point Google Maps : "+mapLink+"\n":"")+"Paiement souhaité : "+payment+(note?"\nNote : "+note:"")+"\n\nMerci de confirmer ma commande. Son statut est actuellement : EN ATTENTE.";toast("Demande enregistrée ! Réf. "+created.tracking_code);const url="https://wa.me/"+(phoneForLink(settings.whatsapp)||DEFAULTS.whatsapp)+"?text="+encodeURIComponent(msg);window.open(url,"_blank","noopener,noreferrer");setTimeout(()=>{if(confirm("Ta demande est enregistrée. Veux-tu consulter son suivi maintenant ?"))location.href=trackingUrl},350)}catch(err){console.error("Order submission failed",err);toast("Impossible d’enregistrer la commande : "+(err.message||"réessaie plus tard."))}finally{submitButton.disabled=false;submitButton.textContent="Envoyer ma demande sur WhatsApp ↗"}});
 function openLocationLink(link){$("customerMapLink").value=link;$("locationStatus").textContent="Lien de position prêt. Vérifie-le, puis il sera ajouté au message de commande.";const b=$("openMapBtn");b.classList.remove("hidden");b.onclick=()=>window.open(link,"_blank","noopener,noreferrer");}
