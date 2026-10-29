@@ -1,5 +1,5 @@
-const CACHE_NAME = "kossia-shop-pwa-v1";
-const APP_SHELL = ["/", "/track-order.html", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg"];
+const CACHE_NAME = "kossia-shop-pwa-v2";
+const APP_SHELL = ["/", "/track-order.html", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg", "/icons/logo-horizontal.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
