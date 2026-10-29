@@ -315,7 +315,7 @@ $("accountRegisterBtn").addEventListener("click",()=>{
  $("accountPassword").autocomplete=accountAction==="register"?"new-password":"current-password";
  setAccountMessage("accountAuthMessage",accountAction==="register"?"Utilise une adresse e-mail valide et un mot de passe d’au moins 8 caractères.":"Connecte-toi avec ton adresse e-mail et ton mot de passe.");
 });
-$("accountLogoutBtn").addEventListener("click",async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){setAccountMessage("accountProfileMessage",error.message);return}showCustomerAccount(null);setAccountMessage("accountAuthMessage","Tu es déconnecté(e).")});
+$("accountLogoutBtn").addEventListener("click",async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){setAccountMessage("accountProfileMessage",error.message);return}showCustomerAccount(null);favorites=new Set();try{localStorage.setItem("kossia-shop-favorites","[]")}catch(e){}renderProducts();setAccountMessage("accountAuthMessage","Tu es déconnecté(e).")});
 $("customerProfileForm").addEventListener("submit",async e=>{
  e.preventDefault();if(!db||!customerSession)return;const btn=$("accountProfileSave");btn.disabled=true;
  try{const profile={user_id:customerSession.user.id,full_name:$("accountFullName").value.trim(),phone:$("accountPhone").value.trim(),delivery_area:$("accountArea").value.trim(),delivery_address:$("accountAddress").value.trim(),updated_at:new Date().toISOString()};
@@ -343,8 +343,7 @@ async function syncFavoritesFromCloud(){
  if(!db||!customerSession)return;
  try{const {data,error}=await db.from("customer_favorites").select("product_id").eq("user_id",customerSession.user.id);if(error)throw error;
  const cloud=new Set((data||[]).map(x=>String(x.product_id)));
- if(cloud.size){favorites=new Set([...favorites,...cloud]);await saveFavoritesCloud([...favorites]);}
- else if(favorites.size){await saveFavoritesCloud([...favorites]);}
+ favorites=cloud;
  localStorage.setItem("kossia-shop-favorites",JSON.stringify([...favorites]));renderProducts();
  }catch(err){console.warn("Favoris synchronisés partiellement",err)}
 }
